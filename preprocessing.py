@@ -2,7 +2,9 @@ from cgitb import enable
 
 from pymystem3 import Mystem
 from categories import get_categories
-STOP_LIST = ['и', 'для', 'все', 'всё', 'на', 'за', 'товары', 'товар', 'с', 'изделия', 'оплата']
+
+STOP_LIST = ['и', 'для', 'все', 'всё', 'на', 'за', "из",
+             'товары', 'товар', 'с', 'изделия', 'оплата']
 mystem = Mystem()
 
 def preprocess_group(c, enable_stemming=False):

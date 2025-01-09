@@ -1,25 +1,35 @@
 import pyorc
 import os
+
+from pandas.core.dtypes.common import ensure_int16
 from pyorc.enums import StructRepr
 import pandas as pd
 import tqdm
 import numpy as np
 
-PATH = "C:\\Projects\\temp\\data"
+PATH = "C:\\Projects\\temp\\data\\test"
+SAVEPATH = os.path.join(PATH, 'mass')
+os.makedirs(SAVEPATH, exist_ok=True)
+
+nchunks = 20
+total_size = 20*1e6
+chunk_size = total_size//nchunks
 
 if __name__ == '__main__':
 
     all_files = os.listdir(PATH)
     #print(all_files)
 
+    save = True
     strs = []
     with open(os.path.join(PATH, all_files[0]), "rb") as f:
         reader = pyorc.Reader(f, struct_repr=StructRepr.DICT)
         #print(str(reader.schema))
 
-        for _ in tqdm.tqdm(np.arange(10000)):
+        counter = 0
+        i=0
+        while i < total_size:
             data = next(reader)
-            #print(data)
             product = []
             if data['NER'] is not None:
                 if len(data['NER']) != 0:
@@ -30,10 +40,14 @@ if __name__ == '__main__':
             data['product'] = product
             strs.append(data)
 
-    df = pd.DataFrame.from_records(strs)
-    print(df)
+            if i % chunk_size == 0 and i!=0:
+                part = int(i//chunk_size)
+                print(f'part {part} completed')
+                df = pd.DataFrame.from_records(strs)
+                print(df)
+                strs = []
 
-    save = 1
-    if save:
-        df.to_csv(os.path.join(PATH, 'test', 'test fd 3.csv'))#, encoding='cp1251')
+                if save:
+                    df.to_csv(os.path.join(SAVEPATH, f'fd mass 1.0 p{part}.csv'))#, encoding='cp1251')
 
+            i+=1

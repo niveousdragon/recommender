@@ -3,7 +3,7 @@ def process_string(s):
     return s.split('(')[0].strip()
 
 def get_categories():
-    with open('categories.txt', 'r+', encoding='utf-8') as f:
+    with open('categories_llm.txt', 'r+', encoding='utf-8') as f:
         content = f.read()
 
     strings = content.split('\n')
