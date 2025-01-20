@@ -23,17 +23,18 @@ def get_av_vector(item, enable_stemming=False):
     if len(vecs) == 0:
         avvec = np.zeros(300)
     else:
-        avvec = np.sum(vecs, axis=0)
+        avvec = np.mean(vecs, axis=0)
 
     return avvec
 
 
-llm_items = pd.read_excel('LLM items corr full v1.0.xlsx')
+llm_items = pd.read_excel('LLM items corr full v1.1.xlsx')
 
 all_embeddings = []
 for i, row in llm_items.iterrows():
     #print(row)
     sc_ = row['subcategory']
+    cat = row['category']
     sc = " ".join(ast.literal_eval(sc_))
     items_to_process = row['10 products'][1:-1].split(',')[:10]
     #print(len(items_to_process))
@@ -51,16 +52,23 @@ for i, row in llm_items.iterrows():
         final_items_to_process = items_to_process + [sc for _ in range(11 - len(items_to_process))]
 
     vectors = [get_av_vector(item) for item in final_items_to_process]
+
+    # get default vector
     sc_avvec = get_av_vector(sc)
+    if np.allclose(sc_avvec, np.zeros(300), rtol=1e-5):
+        sc_avvec = get_av_vector(cat)
+    if np.allclose(sc_avvec, np.zeros(300), rtol=1e-5):
+        sc_avvec = np.random.random(size=300)
 
     corr_vectors = np.array([v if not np.allclose(v, np.zeros(300), rtol=1e-5) else sc_avvec for v in vectors])
     if len(corr_vectors) != 11:
         print(sc)
+        #print(sc_avvec[:20])
         print(len(items_to_process))
         print(len(final_items_to_process), final_items_to_process)
-        print(corr_vectors.shape)
+        print(corr_vectors)
         print('=======================')
     all_embeddings.append(corr_vectors)
 
 all_embs_array = np.dstack(all_embeddings)
-np.savez('embeddings arr v1.0.npz', all_embs_array)
+np.savez('embeddings arr v1.1.npz', all_embs_array)

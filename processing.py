@@ -7,8 +7,8 @@ import pandas as pd
 import tqdm
 import numpy as np
 
-PATH = "C:\\Projects\\temp\\data\\test"
-SAVEPATH = os.path.join(PATH, 'mass')
+PATH = "C:\\Projects\\temp\\data\\"
+SAVEPATH = "C:\\Projects\\temp\\mass test"
 os.makedirs(SAVEPATH, exist_ok=True)
 
 nchunks = 20
@@ -18,7 +18,7 @@ chunk_size = total_size//nchunks
 if __name__ == '__main__':
 
     all_files = os.listdir(PATH)
-    #print(all_files)
+    print(all_files)
 
     save = True
     strs = []
@@ -48,6 +48,6 @@ if __name__ == '__main__':
                 strs = []
 
                 if save:
-                    df.to_csv(os.path.join(SAVEPATH, f'fd mass 1.0 p{part}.csv'))#, encoding='cp1251')
+                    df.to_csv(os.path.join(SAVEPATH, f'fd mass test 1.0 p{part}.csv'))#, encoding='cp1251')
 
             i+=1
