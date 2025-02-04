@@ -28,7 +28,7 @@ def get_av_vector(item, enable_stemming=False):
     return avvec
 
 
-llm_items = pd.read_excel('LLM items corr full v1.1.xlsx')
+llm_items = pd.read_excel('LLM items corr full v1.2.xlsx')
 
 all_embeddings = []
 for i, row in llm_items.iterrows():
@@ -71,4 +71,4 @@ for i, row in llm_items.iterrows():
     all_embeddings.append(corr_vectors)
 
 all_embs_array = np.dstack(all_embeddings)
-np.savez('embeddings arr v1.1.npz', all_embs_array)
+np.savez('embeddings arr v1.2.npz', all_embs_array)

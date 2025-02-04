@@ -2,7 +2,7 @@ import os
 import pandas as pd
 import json
 
-rpath = os.path.join('C:\\Projects\\temp\\mass test result')
+rpath = os.path.join('C:\\Projects\\temp\\mass test result 2')
 
 all_counts = []
 for df_name in os.listdir(rpath)[:]:
@@ -13,7 +13,7 @@ for df_name in os.listdir(rpath)[:]:
     all_counts.append(counts)
 
 
-llm_items = pd.read_excel('LLM items corr full v1.1.xlsx')
+llm_items = pd.read_excel('LLM items corr full v1.2.xlsx')
 scs = llm_items['subcategory'].values
 tcounts = {}
 for sc in scs:

@@ -1,6 +1,8 @@
 import pandas as pd
-from scipy.sparse import csr_matrix
-
+from scipy.sparse import csr_matrix, save_npz
+import os
+import tqdm
+import json
 
 def construct_sparse_user_item_matrix(transactions_df):
     """
@@ -16,20 +18,20 @@ def construct_sparse_user_item_matrix(transactions_df):
         item_mapping (dict): A dictionary mapping item names to column indices in the matrix.
     """
     # Ensure the input DataFrame has the required columns
-    if 'user_id' not in transactions_df.columns or 'item_name' not in transactions_df.columns:
-        raise ValueError("The input DataFrame must contain 'user_id' and 'item_name' columns.")
+    if 'human' not in transactions_df.columns or 'top_cat' not in transactions_df.columns:
+        raise ValueError("The input DataFrame must contain 'human' and 'top_cat' columns.")
 
     # Create mappings for users and items to unique indices
-    user_mapping = {user_id: idx for idx, user_id in enumerate(transactions_df['user_id'].unique())}
-    item_mapping = {item_name: idx for idx, item_name in enumerate(transactions_df['item_name'].unique())}
+    user_mapping = {user_id: idx for idx, user_id in enumerate(transactions_df['human'].unique())}
+    item_mapping = {item_name: idx for idx, item_name in enumerate(transactions_df['top_cat'].unique())}
 
     # Map users and items to their respective indices
-    transactions_df['user_idx'] = transactions_df['user_id'].map(user_mapping)
-    transactions_df['item_idx'] = transactions_df['item_name'].map(item_mapping)
+    transactions_df['human_idx'] = transactions_df['human'].map(user_mapping)
+    transactions_df['cat_idx'] = transactions_df['top_cat'].map(item_mapping)
 
     # Create a sparse matrix using scipy's csr_matrix
-    row_indices = transactions_df['user_idx']
-    col_indices = transactions_df['item_idx']
+    row_indices = transactions_df['human_idx']
+    col_indices = transactions_df['cat_idx']
     data = [1] * len(transactions_df)  # Each transaction counts as 1 initially
 
     # Aggregate counts for duplicate (user, item) pairs
@@ -42,3 +44,35 @@ def construct_sparse_user_item_matrix(transactions_df):
     sparse_matrix.sum_duplicates()
 
     return sparse_matrix, user_mapping, item_mapping
+
+
+rpath = os.path.join('C:\\Projects\\temp\\mass test result 2')
+df_names = os.listdir(rpath)[:]
+
+all_dfs = []
+for df_name in tqdm.tqdm(os.listdir(rpath)[:75]):
+    df = pd.read_excel(os.path.join(rpath, df_name))
+    all_dfs.append(df)
+
+aggdf = pd.concat(all_dfs)
+mat, um, im = construct_sparse_user_item_matrix(aggdf)
+
+print(mat.shape)
+
+# ==================================== SAVING =======================================
+res_dir = '75M results'
+os.makedirs(res_dir, exist_ok=True)
+
+postfix = '75M'
+um_filename = os.path.join(res_dir, f'user mapping {postfix}.json')
+# Save the dictionary to a JSON file
+with open(um_filename, 'w', encoding='utf-8') as json_file:
+    json.dump(um, json_file, ensure_ascii=False, indent=4)
+
+im_filename = os.path.join(res_dir, f'cat mapping {postfix}.json')
+# Save the dictionary to a JSON file
+with open(im_filename, 'w', encoding='utf-8') as json_file:
+    json.dump(im, json_file, ensure_ascii=False, indent=4)
+
+mat_filename = os.path.join(res_dir, f'user cat matrix {postfix}.npz')
+save_npz(mat_filename, mat)
