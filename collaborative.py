@@ -26,6 +26,9 @@ G[diagIndices] += λ
 P = np.linalg.inv(G)
 B = P / (-np.diag(P))
 B[diagIndices] = 0
+
+b_mat_filename = os.path.join(res_dir, f'B matrix {postfix}.npz')
+save_npz(b_mat_filename, B)
 '''
 fig, ax = plt.subplots(figsize=(10,10))
 ax.matshow(B)

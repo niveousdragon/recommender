@@ -111,7 +111,7 @@ if __name__ == '__main__':
     navec = Navec.load(npath)
 
     PATH = "C:\\Projects\\temp"
-    ORC_INDS = [0,2]
+    ORC_INDS = [2]
     NJOBS = 32
 
 

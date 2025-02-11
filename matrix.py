@@ -40,19 +40,22 @@ def construct_sparse_user_item_matrix(transactions_df):
         shape=(len(user_mapping), len(item_mapping))
     )
 
-    # Sum duplicate entries to count purchases
+    # Sum duplicate entries to count transactions
     sparse_matrix.sum_duplicates()
 
     return sparse_matrix, user_mapping, item_mapping
 
 
-rpath = os.path.join('C:\\Projects\\temp\\mass test result 2')
-df_names = os.listdir(rpath)[:]
+ORC_INDS = [0,2]
 
 all_dfs = []
-for df_name in tqdm.tqdm(os.listdir(rpath)[:75]):
-    df = pd.read_excel(os.path.join(rpath, df_name))
-    all_dfs.append(df)
+for orc_ind in ORC_INDS:
+    rpath = os.path.join(f'C:\\Projects\\temp\\full-scale v1 rubricator result\\file {orc_ind}')
+    df_names = os.listdir(rpath)[:]
+
+    for df_name in tqdm.tqdm(os.listdir(rpath)[:]):
+        df = pd.read_excel(os.path.join(rpath, df_name))
+        all_dfs.append(df)
 
 aggdf = pd.concat(all_dfs)
 mat, um, im = construct_sparse_user_item_matrix(aggdf)
@@ -62,8 +65,9 @@ print(mat.shape)
 # ==================================== SAVING =======================================
 res_dir = '75M results'
 os.makedirs(res_dir, exist_ok=True)
-
 postfix = '75M'
+
+
 um_filename = os.path.join(res_dir, f'user mapping {postfix}.json')
 # Save the dictionary to a JSON file
 with open(um_filename, 'w', encoding='utf-8') as json_file:
