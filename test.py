@@ -1,19 +1,15 @@
 from navec import Navec
 import numpy as np
 from numpy.linalg import norm
-import os
-from processing import PATH
 import json
 import pandas as pd
-from llm_postprocessing import npath
-from rubricator import cossim, get_product_avvector
 
 npath = 'navec_hudlit_v1_12B_500K_300d_100q.tar'
 navec = Navec.load(npath)
 
 #print(navec.sim('пирожок', "автокресло"))
 
-emb_arr = np.load('embeddings arr v1.1.npz')['arr_0'].transpose(2,0,1)
+emb_arr = np.load('old/embeddings arr v1.1.npz')['arr_0'].transpose(2, 0, 1)
 emb_norm = norm(emb_arr, axis=-1)
 
 '''
