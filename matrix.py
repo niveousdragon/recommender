@@ -3,6 +3,7 @@ from scipy.sparse import csr_matrix, save_npz
 import os
 import tqdm
 import json
+import gc
 
 def construct_sparse_user_item_matrix(transactions_df):
     """
@@ -60,6 +61,11 @@ for orc_ind in ORC_INDS:
         all_dfs.append(df)
 
 aggdf = pd.concat(all_dfs)
+
+for df in all_dfs:
+    del df
+    gc.collect()
+
 mat, um, im = construct_sparse_user_item_matrix(aggdf)
 
 print(mat.shape)
