@@ -79,17 +79,23 @@ def apply_rubricator_to_dataframe(df_name,
     #--------print(S.shape)
 
     topcat_inds = np.argmax(S, axis=0)
-    topcat_sims = S[topcat_inds, np.arange(len(topcat_inds))]
-    topcat = [sc_mapping[tci] for tci in topcat_inds]
+
+    ultra_light_dfs = True
 
     light_df = pd.DataFrame()
     light_df['human'] = df['human_id'][good_prod_indices]
-    light_df['date'] = df['date_actual'][good_prod_indices]
-    light_df['product'] = df['product'][good_prod_indices]
-    light_df['top_cat'] = topcat
+    light_df['top_cat_ind'] = topcat_inds
+    topcat_sims = S[topcat_inds, np.arange(len(topcat_inds))]
     light_df['top_cat_sim'] = topcat_sims
+    light_df['date'] = df['date_actual'][good_prod_indices]
+    #light_df['amount'] = df['sum'][good_prod_indices]
 
-    save = 1
+    if not ultra_light_dfs:
+        topcat = [sc_mapping[tci] for tci in topcat_inds]
+        light_df['product'] = df['product'][good_prod_indices]
+        light_df['top_cat'] = topcat
+
+    save = True
     if save:
         df_name_base = df_name[:-4]
         # print(df_name_base)
@@ -100,10 +106,16 @@ def apply_rubricator_to_dataframe(df_name,
 
         min_thr = 0.2
         light_df = light_df[light_df['top_cat_sim'] > min_thr]
+        light_df.to_parquet(os.path.join(save_path,
+                              f'{df_name_base} neuro cat light.parquet'),
+                              compression='gzip',
+                              index=None)
+        '''
         light_df.to_excel(os.path.join(save_path,
                               f'{df_name_base} neuro cat light.xlsx'),
                              engine='xlsxwriter',
                              index=False)
+        '''
 
     return True
 
@@ -135,7 +147,7 @@ if __name__ == '__main__':
                                  sc_mapping=sc_mapping,
                                  spath=PATH,
                                  orc_ind=orc_ind),
-                                 all_dfs[:])
+                                 all_dfs[:5])
 
 
 
