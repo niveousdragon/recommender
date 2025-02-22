@@ -71,7 +71,7 @@ mat, um, im = construct_sparse_user_item_matrix(aggdf)
 print(mat.shape)
 
 # ==================================== SAVING =======================================
-res_dir = 'orc2 results'
+res_dir = '../orc2 results'
 os.makedirs(res_dir, exist_ok=True)
 postfix = 'orc2'
 

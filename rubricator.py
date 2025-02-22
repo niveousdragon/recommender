@@ -125,8 +125,8 @@ if __name__ == '__main__':
     navec = Navec.load(npath)
 
     PATH = "C:\\Projects\\temp"
-    ORC_INDS = [2]
-    NJOBS = 5
+    ORC_INDS = [0,1,5,6,7,8,9]
+    NJOBS = 7
 
     emb_arr = np.load('embeddings arr v1.2.npz')['arr_0'].transpose(2, 0, 1)
     emb_norm = emb_arr / norm(emb_arr, axis=2, keepdims=True).astype(np.float32)
@@ -147,7 +147,7 @@ if __name__ == '__main__':
                                  sc_mapping=sc_mapping,
                                  spath=PATH,
                                  orc_ind=orc_ind),
-                                 all_dfs[:5])
+                                 all_dfs[:])
 
 
 

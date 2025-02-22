@@ -27,7 +27,7 @@ def do_ind(orc_ind):
                             if part['ner'] == 'PRODUCT':
                                 product.append(part['text'])
 
-                light_data = {key: data[key] for key in ['human_id', 'date_actual']}
+                light_data = {key: data[key] for key in ['human_id', 'date_actual', 'sum']}
                 light_data['product'] = product
                 strs.append(light_data)
 
@@ -49,10 +49,10 @@ def do_ind(orc_ind):
                 break
 
 
-#DATAPATH = "C:\\Projects\\temp\\data\\"
-DATAPATH = "/usrshome/kpolovnikov/data/"
-#SAVEPATH = "C:\\Projects\\temp\\full-scale v1"
-SAVEPATH = "/usrshome/kpolovnikov/full-scale v1"
+DATAPATH = "C:\\Projects\\temp\\data\\"
+#DATAPATH = "/usrshome/kpolovnikov/data/"
+SAVEPATH = "C:\\Projects\\temp\\full-scale v1"
+#SAVEPATH = "/usrshome/kpolovnikov/full-scale v1"
 
 os.makedirs(SAVEPATH, exist_ok=True)
 
@@ -62,9 +62,9 @@ all_files = sorted(os.listdir(DATAPATH))
 total_size_cap = 100*1e6 # max number of lines from 1 file, has no effect if large enough, useful for experiments
 chunk_size = 1e6
 
-orc_indices = np.arange(0,10)
+#orc_indices = np.arange(0,10)
+orc_indices = [3,4]
 
 if __name__ == '__main__':
-
     with Pool(100) as p:
         p.map(do_ind, orc_indices)

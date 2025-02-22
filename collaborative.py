@@ -29,13 +29,12 @@ G = G.todense()
 λ = 100
 diagIndices = np.diag_indices(G.shape[0])
 G[diagIndices] += λ
-print(type(G))
+
 P = np.linalg.inv(G)
 B = P / (-np.diag(P))
 B[diagIndices] = 0
 
 b_mat_filename = os.path.join(res_dir, f'B matrix {postfix} lambda={λ}.npz')
-print(type(B))
 
 np.savez(b_mat_filename, B)
 
@@ -46,9 +45,7 @@ plt.show()
 '''
 
 if compute_features:
-
     feat_mat_filename = os.path.join(res_dir, f'feat matrix {postfix} lambda={λ}.npz')
-
     X = load_npz(mat_filename)
     F = X.todense().dot(B)
     np.savez(feat_mat_filename, F)
