@@ -63,8 +63,8 @@ total_size_cap = 100*1e6 # max number of lines from 1 file, has no effect if lar
 chunk_size = 1e6
 
 #orc_indices = np.arange(0,10)
-orc_indices = [3,4]
+orc_indices = [0,1,5,6,7,8,9]
 
 if __name__ == '__main__':
-    with Pool(100) as p:
+    with Pool(7) as p:
         p.map(do_ind, orc_indices)

@@ -32,9 +32,21 @@ def construct_user_item_mapping(transactions_df):
     return user_mapping, item_mapping
 
 
-res_dir = '3 orcs'
-postfix = '3 orcs'
-ORC_INDS = [2,3,4]
+def preprocess_df(df):
+    #print(df.head())
+    df.dropna(inplace=True)
+    df['date'] = df['date'].astype(str)
+    df['year'] = df['date'].apply(lambda date: int(date[:4]))
+    df['month'] = df['date'].apply(lambda date: int(date[5:7]))
+    df.drop(['date'], axis=1, inplace=True)
+    df.drop(['top_cat_sim'], axis=1, inplace=True)
+    df['human'] = df['human'].apply(lambda v: v[:12])
+    return df
+
+
+res_dir = '10 orcs'
+postfix = '10 orcs'
+ORC_INDS = np.arange(10)
 
 adf = None
 for orc_ind in ORC_INDS:
@@ -44,7 +56,9 @@ for orc_ind in ORC_INDS:
 
     for df_name in tqdm.tqdm(os.listdir(rpath)[:]):
         df = pd.read_parquet(os.path.join(rpath, df_name), engine='pyarrow')
-        orc_parts.append(df)
+        pdf = preprocess_df(df)
+        del df
+        orc_parts.append(pdf)
 
     #create united orc df and add it to global one
     orcdf = pd.concat(orc_parts, ignore_index=True)
@@ -54,8 +68,8 @@ for orc_ind in ORC_INDS:
         adf = pd.concat([adf, orcdf], ignore_index=True)
 
     # memory cleanup
-    for df in orc_parts:
-        del df
+    for pdf in orc_parts:
+        del pdf
     del orcdf
     gc.collect() # force collecting garbage from a single .orc
 
@@ -63,12 +77,14 @@ print('calculating mapping for humans...')
 #user_mapping, item_mapping = construct_user_item_mapping(adf)
 
 adf['human_id'], _ = adf['human'].factorize()
+adf.drop(['human'], axis=1, inplace=True)
 #adf['human_id'] = adf['human'].astype('category').cat.codes
 #----adf['human_id'] = adf['human'].map(user_mapping)
 #print(adf['human_id'])
 
 print('calculating mapping for cats...')
 adf['cat_id'], _ = adf['top_cat_ind'].factorize()
+adf.drop(['top_cat_ind'], axis=1, inplace=True)
 #adf['cat_id'] = adf['top_cat_ind'].astype('category').cat.codes
 #-----adf['cat_id'] = adf['top_cat_ind'].map(item_mapping)
 #print(adf['cat_id'])
@@ -82,50 +98,50 @@ print('processing month info...')
 
 # Extract the year and add it as a new column
 #adf['year'] = adf['date'].dt.year
-
+'''
 adf.dropna(inplace=True)
 adf['date'] = adf['date'].astype(str)
 adf['year'] = adf['date'].apply(lambda date: int(date[:4]))
 adf['month'] = adf['date'].apply(lambda date: int(date[5:7]))
-
+'''
 adf['month_abs_number'] = (2024-adf['year'])*12 + adf['month']
 adf['month_abs_number'] = adf['month_abs_number'] - min(adf['month_abs_number'])
+adf.drop(['year', 'month'], axis=1, inplace=True)
+
 
 print('constructing UMC tensor...')
 # positive events
 psubs1 = np.array(adf['human_id'].values, dtype=int)
+adf.drop(['human_id'], axis=1, inplace=True)
 psubs2 = np.array(adf['month_abs_number'].values, dtype=int)
+adf.drop(['month_abs_number'], axis=1, inplace=True)
 psubs3 = adf['cat_id'].values
 
 #print(psubs1[:100], psubs2[:100], psubs3[:100])
 print(min(psubs1), min(psubs2), min(psubs3))
+
+nrows = len(adf)
+del adf
+gc.collect()
+
 psubs = np.array([psubs1, psubs2, psubs3]).T  # Subscripts of +1.
-vals = np.ones(len(adf), dtype=int).reshape(-1,1)  # Vals is a column vector;
-X = pyttb.sptensor.from_aggregator(psubs, vals)  # Sparse tensor
+print('before filtering:')
+print(psubs.shape)
+
+# Remove duplicate rows
+unique_psubs = np.unique(psubs, axis=0)
+print('after filtering:')
+print(unique_psubs.shape)
+
+vals = np.ones(unique_psubs.shape[0], dtype=int).reshape(-1,1)  # Vals is a column vector;
+X = pyttb.sptensor.from_aggregator(unique_psubs, vals)  # Sparse tensor
+
+del psubs1, psubs2, psubs3, psubs, vals, unique_psubs
+gc.collect()
 
 print(X.shape)
-'''
-S = X.collapse(dims=np.array([2])).double() # collapse over categories
-h_nonempty_inds, m_nonempty_inds = np.where(S != 0) # nonempty user-month pairs
-'''
 
-'''
-# all events (mostly negative)
-asubs1 = np.repeat(h_nonempty_inds, ncat)
-asubs2 = np.repeat(m_nonempty_inds, ncat)
-asubs3 = np.repeat(np.arange(ncat), len(h_nonempty_inds))
-
-#print(nsubs1[:100], nsubs2[:100], nsubs3[:100])
-asubs = np.array([asubs1, asubs2, asubs3]).T  # Subscripts of the +1 and -1.
-all_vals = -np.ones((len(h_nonempty_inds), ncat)) # all values
-all_vals[psubs1, psubs3] = 1 # return +1 to data
-
-fvals = all_vals.ravel().reshape(-1,1)  # ravel returns row1-row2-row3...
-Xf = pyttb.sptensor.from_aggregator(asubs, fvals)  # Sparse tensor
-
-print(Xf.shape)
-'''
-
+print('Saving UMC tensor...')
 os.makedirs(res_dir, exist_ok=True)
 np.savez(
     os.path.join(res_dir, f"sparse_user_month_cat_{postfix}.npz"),

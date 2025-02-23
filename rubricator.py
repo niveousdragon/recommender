@@ -125,7 +125,7 @@ if __name__ == '__main__':
     navec = Navec.load(npath)
 
     PATH = "C:\\Projects\\temp"
-    ORC_INDS = [0,1,5,6,7,8,9]
+    ORC_INDS = [2]
     NJOBS = 7
 
     emb_arr = np.load('embeddings arr v1.2.npz')['arr_0'].transpose(2, 0, 1)
