@@ -125,18 +125,13 @@ del adf
 gc.collect()
 
 psubs = np.array([psubs1, psubs2, psubs3]).T  # Subscripts of +1.
-print('before filtering:')
+print('indices shape:')
 print(psubs.shape)
 
-# Remove duplicate rows
-unique_psubs = np.unique(psubs, axis=0)
-print('after filtering:')
-print(unique_psubs.shape)
+vals = np.ones(psubs.shape[0], dtype=int).reshape(-1,1)  # Vals is a column vector;
+X = pyttb.sptensor.from_aggregator(psubs, vals)  # Sparse tensor
 
-vals = np.ones(unique_psubs.shape[0], dtype=int).reshape(-1,1)  # Vals is a column vector;
-X = pyttb.sptensor.from_aggregator(unique_psubs, vals)  # Sparse tensor
-
-del psubs1, psubs2, psubs3, psubs, vals, unique_psubs
+del psubs1, psubs2, psubs3, psubs, vals
 gc.collect()
 
 print(X.shape)
